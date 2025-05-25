@@ -170,13 +170,13 @@ class NemoTerminal(object):
             "paste-clipboard",
             accel_group,
             ord("V"),
-            Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.SHIFT_MASK,
+            Gdk.ModifierType.SHIFT_MASK,
             Gtk.AccelFlags.VISIBLE)
         self.term.add_accelerator(
             "copy-clipboard",
             accel_group,
             ord("C"),
-            Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.SHIFT_MASK,
+            Gdk.ModifierType.SHIFT_MASK,
             Gtk.AccelFlags.VISIBLE)
         #Drag & Drop
         self.term.drag_dest_set(
