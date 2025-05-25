@@ -186,8 +186,29 @@ class NemoTerminal(object):
             [Gtk.TargetEntry.new("text/uri-list", 0, 80)],
             Gdk.DragAction.COPY,
         )
-        
 
+        # ─────────────────────────────────────────────────────────────────────────────
+		# this code tries to bind to F4 within the term in order to close it when it has the focus
+		
+        self.term.connect("key-press-event", self._on_term_key_press)
+
+        close_action = Gtk.Action(name="close", label="Close Terminal")
+        close_action.connect("activate", self.close_terminal)
+
+        self.term.add_accelerator(
+            "activate",           # The signal to emit on accelerator
+            accel_group,
+            Gdk.KEY_F4,           # F4 key
+            Gdk.ModifierType(0),  # No modifier
+            Gtk.AccelFlags.VISIBLE
+        )
+
+        close_action = Gtk.Action(name="close", label="Close Terminal")
+        close_action.connect("activate", self.close_terminal)
+        # Add the action to your action group or UI manager as needed
+
+        # ─────────────────────────────────────────────────────────────────────────────
+            
         self.term.drag_dest_add_uri_targets()
         self.term.connect("drag_data_received", self._on_drag_data_received)
 
@@ -252,6 +273,29 @@ class NemoTerminal(object):
         #Register the callback for show/hide
         if hasattr(window, "toggle_hide_cb"):
             window.toggle_hide_cb.append(self.set_visible)
+
+    def _on_term_key_press(self, widget, event):
+        # Gdk.KEY_F4 is the F4 key; event.state==0 ensures no modifiers
+        if event.keyval == Gdk.KEY_F4 and event.state == 0:
+            self.close_terminal()
+            
+            # stop further handling
+            #return True
+            # returning False allows the event to propagate to parent accel groups
+            #return False
+            # find the toplevel window (i.e. Nemo)
+            toplevel = widget.get_toplevel()
+            if isinstance(toplevel, Gtk.Window):
+                # re-send the key event into Nemo’s accelerator chain
+                toplevel.propagate_key_event(event)  # :contentReference[oaicite:0]{index=0}
+            return False   # stop further handling in the terminal itself            
+            
+        return False
+
+
+    def close_terminal(self, *args):
+        self.term.hide()  # Or use self.term.destroy() if you want to remove it completely
+
 
     def _goto_current_terminal_directory(self):
         """Navigate the active Nemo pane to the current working directory
